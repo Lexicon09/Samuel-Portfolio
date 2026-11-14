@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cino Wallet | Olujola Samuel</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&family=Instrument+Serif:ital@1&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --page: #ffffff;
+      --ink: #161616;
+      --muted: #55575b;
+      --soft: #8a8a84;
+      --line: #e4e4e2;
+      --tint: #efefea;
+      --accent: #ff6a2b;
+      --brand: #2f6cf0;                 /* Cino blue: change to the project's real brand colour */
+      --head: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --body: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    html, body { background: var(--page); color: var(--ink); font-family: var(--body); -webkit-font-smoothing: antialiased; }
+
+    /* ---------- top bar ---------- */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      height: 66px; padding: 0 7.8vw;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(255,255,255,0.92); backdrop-filter: blur(10px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.3s;
+    }
+    .topbar.scrolled { border-color: var(--line); }
+
+    .logo { font-family: "Mrs Saint Delafield", cursive; font-size: 40px; line-height: 1; color: var(--ink); text-decoration: none; }
+    .logo i { font-style: normal; color: var(--accent); }
+
+    .back {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 36px; padding: 0 16px; border-radius: 999px;
+      border: 1px solid var(--line); background: #fff;
+      color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: background 0.2s, color 0.2s;
+    }
+    .back:hover { background: var(--ink); color: #fff; }
+
+    /* ---------- image placeholders ----------
+       To use a real image: replace the whole <div class="ph">…</div> with
+       <img src="images/cino/your-file.png" alt="describe it" />  */
+    .media { margin: 0; }
+    .media img, .ph {
+      display: block; width: 100%;
+      border-radius: 14px;
+      aspect-ratio: var(--r, 16 / 10);
+      object-fit: cover;
+    }
+    .ph {
+      position: relative;
+      display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+      padding: 20px;
+      background:
+        repeating-linear-gradient(135deg, rgba(0,0,0,0.035) 0 12px, transparent 12px 24px),
+        var(--tint);
+      border: 1.5px dashed #cfcfc8;
+      color: #77776f;
+      font-size: 13px; line-height: 1.5;
+    }
+    .ph b { display: block; font-family: var(--head); font-size: 15px; font-weight: 600; color: #3b3b37; margin-bottom: 4px; letter-spacing: -0.01em; }
+    .ph.dark { background: repeating-linear-gradient(135deg, rgba(255,255,255,0.05) 0 12px, transparent 12px 24px), #1b1b1d; border-color: #3a3a3e; color: #9a9aa0; }
+    .ph.dark b { color: #e8e8ea; }
+    .media figcaption { margin-top: 10px; font-size: 13px; color: var(--soft); }
+
+    /* ---------- hero ---------- */
+    .hero {
+      padding: 130px 7.8vw 0;
+      max-width: calc(1240px + 15.6vw);
+      margin: 0 auto;
+    }
+    .kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--muted); }
+    .kicker::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+    .hero h1 {
+      margin-top: 18px;
+      font-family: var(--head); font-weight: 400;
+      font-size: clamp(2.6rem, 6vw, 5rem);
+      line-height: 1.02; letter-spacing: -0.05em;
+    }
+    .hero h1 em { font-style: normal; color: #858585; }
+
+    /* store buttons */
+    .stores { margin-top: 30px; display: flex; flex-wrap: wrap; gap: 12px; }
+    .store {
+      display: inline-flex; align-items: center; gap: 12px;
+      height: 54px; padding: 0 22px 0 18px;
+      border-radius: 12px; background: var(--ink); color: #fff;
+      text-decoration: none;
+      transition: transform 0.25s, opacity 0.25s;
+    }
+    .store:hover { transform: translateY(-2px); opacity: 0.9; }
+    .store svg { width: 24px; height: 24px; flex: none; fill: currentColor; }
+    .store span { display: flex; flex-direction: column; line-height: 1.15; }
+    .store small { font-size: 11px; color: rgba(255,255,255,0.75); }
+    .store b { font-family: var(--head); font-size: 17px; font-weight: 500; letter-spacing: -0.02em; }
+
+    .facts {
+      margin-top: 44px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+      border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    }
+    .facts div { padding: 18px 20px 18px 0; }
+    .facts div + div { padding-left: 20px; border-left: 1px solid var(--line); }
+    .facts dt { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soft); }
+    .facts dd { margin-top: 6px; font-size: 15px; font-weight: 500; }
+
+    .hero .media { margin-top: 40px; --r: 21 / 9; }
+
+    /* ---------- page grid: sticky side nav + story ---------- */
+    .layout {
+      display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 70px;
+      max-width: calc(1240px + 15.6vw);
+      margin: 0 auto;
+      padding: 90px 7.8vw 40px;
+    }
+
+    .toc { position: sticky; top: 110px; align-self: start; }
+    .toc p { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--soft); margin-bottom: 16px; padding-left: 22px; }
+    .toc ul { list-style: none; }
+    .toc a {
+      position: relative; display: block;
+      padding: 9px 0 9px 22px;
+      font-size: 15px; color: #6b6b66; text-decoration: none;
+      transition: color 0.25s;
+    }
+    .toc a::before {
+      content: ""; position: absolute; left: 4px; top: 50%;
+      width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%;
+      background: #c7c7c1;
+      transition: background 0.25s, transform 0.25s;
+    }
+    .toc a:hover { color: var(--ink); }
+    .toc a.on { color: var(--ink); font-weight: 600; }
+    .toc a.on::before { background: var(--accent); transform: scale(1.5); }
+
+    /* progress rail under the menu */
+    .toc .bar { margin: 22px 0 0 22px; height: 2px; width: 120px; background: var(--line); border-radius: 2px; overflow: hidden; }
+    .toc .bar span { display: block; height: 100%; width: 0; background: var(--accent); }
+
+    .story { min-width: 0; }
+
+    section.part { padding-bottom: 110px; scroll-margin-top: 96px; }
+    section.part:last-child { padding-bottom: 40px; }
+
+    .num { font-family: "Instrument Serif", Georgia, serif; font-style: italic; font-size: 20px; color: var(--accent); }
+
+    .part h2 {
+      margin-top: 6px;
+      font-family: var(--head); font-weight: 400;
+      font-size: clamp(1.9rem, 3.1vw, 2.7rem);
+      line-height: 1.08; letter-spacing: -0.045em;
+    }
+
+    .part h3 { font-family: var(--head); font-size: 20px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.2; }
+
+    .lead { margin-top: 22px; max-width: 680px; font-size: 18px; line-height: 1.65; color: #2a2a28; }
+    .part p.t { margin-top: 18px; max-width: 680px; font-size: 16px; line-height: 1.7; color: #55575b; }
+
+    .part .media { margin-top: 40px; }
+
+    /* ---------- reusable blocks ---------- */
+    .cards { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .card {
+      padding: 22px 22px 24px;
+      border: 1px solid var(--line); border-radius: 14px; background: #fff;
+    }
+    .card .n { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--tint); font-size: 13px; font-weight: 600; margin-bottom: 18px; }
+    .card h3 { font-size: 17px; }
+    .card p { margin-top: 8px; font-size: 14.5px; line-height: 1.6; color: #6b6b66; }
+
+    .pull {
+      margin-top: 36px; padding: 30px 32px;
+      border-radius: 16px; background: var(--ink); color: #f4f4f0;
+    }
+    .pull q { display: block; quotes: none; font-family: var(--head); font-size: clamp(1.3rem, 2.3vw, 1.8rem); line-height: 1.3; letter-spacing: -0.035em; }
+    .pull small { display: block; margin-top: 16px; font-size: 13px; color: #9a9aa0; }
+
+    .grid2 { margin-top: 36px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .grid3 { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid2 .media, .grid3 .media { margin-top: 0; }
+
+    .chips { margin-top: 34px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .chips span { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); font-size: 13.5px; color: #3b3b37; }
+
+    /* constraints: a simple ruled list */
+    .rules { margin-top: 34px; border-top: 1px solid var(--line); }
+    .rules li {
+      list-style: none; display: grid; grid-template-columns: 190px 1fr; gap: 24px;
+      padding: 22px 0; border-bottom: 1px solid var(--line);
+    }
+    .rules b { font-family: var(--head); font-weight: 500; font-size: 16px; letter-spacing: -0.02em; }
+    .rules span { font-size: 15px; line-height: 1.6; color: #6b6b66; }
+
+    /* decisions: each one is a mini story */
+    .decision { margin-top: 56px; padding-top: 34px; border-top: 1px solid var(--line); }
+    .decision:first-of-type { margin-top: 40px; }
+    .decision .tag { display: inline-block; margin-bottom: 12px; padding: 4px 10px; border-radius: 999px; background: var(--tint); font-size: 12px; font-weight: 500; color: #55554f; }
+    .decision .media { margin-top: 26px; }
+    .ba { margin-top: 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ba .media { margin-top: 0; }
+    .ba figcaption b { color: var(--ink); font-weight: 600; }
+
+    /* solution: screens on a tinted stage */
+    .stage { margin-top: 40px; padding: 40px; border-radius: 18px; background: linear-gradient(160deg, #4d8dff, var(--brand)); }
+    .stage .grid3 { margin-top: 0; }
+    .stage .ph { background: repeating-linear-gradient(135deg, rgba(255,255,255,0.12) 0 12px, transparent 12px 24px), rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.5); color: #fff; }
+    .stage .ph b { color: #fff; }
+
+    /* outcomes */
+    .stats { margin-top: 36px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .stat { padding: 26px 24px; border-radius: 16px; background: var(--tint); }
+    .stat strong { display: block; font-family: var(--head); font-weight: 400; font-size: clamp(2.4rem, 4vw, 3.4rem); letter-spacing: -0.05em; line-height: 1; }
+    .stat span { display: block; margin-top: 12px; font-size: 14px; line-height: 1.5; color: #6b6b66; }
+
+    /* learnings */
+    .learn { margin-top: 34px; display: grid; gap: 12px; }
+    .learn li { list-style: none; display: grid; grid-template-columns: 36px 1fr; gap: 14px; padding: 20px 22px; border: 1px solid var(--line); border-radius: 14px; }
+    .learn i { font-style: normal; font-family: "Instrument Serif", Georgia, serif; font-size: 26px; line-height: 1; color: var(--accent); }
+    .learn b { display: block; font-family: var(--head); font-weight: 500; font-size: 16px; letter-spacing: -0.02em; }
+    .learn p { margin-top: 4px; font-size: 14.5px; line-height: 1.6; color: #6b6b66; }
+
+    /* next project */
+    .next { margin-top: 70px; padding: 44px 7.8vw 60px; background: var(--tint); }
+    .next-in { max-width: 1240px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .next small { display: block; font-size: 13px; color: var(--soft); margin-bottom: 8px; }
+    .next h2 { font-family: var(--head); font-weight: 400; font-size: clamp(1.9rem, 3.6vw, 3rem); letter-spacing: -0.05em; line-height: 1.05; }
+    .next a.go {
+      display: inline-flex; align-items: center; gap: 10px;
+      height: 48px; padding: 0 28px; border-radius: 999px;
+      background: var(--ink); color: #fff; text-decoration: none; font-size: 16px;
+      transition: opacity 0.2s;
+    }
+    .next a.go:hover { opacity: 0.85; }
+
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ---------- tablet / mobile ---------- */
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; gap: 0; padding-top: 0; }
+
+      /* side menu becomes a sticky scrolling strip under the top bar */
+      .toc {
+        position: sticky; top: 66px; z-index: 40;
+        margin: 0 -7.8vw 40px; padding: 10px 7.8vw;
+        background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
+        border-bottom: 1px solid var(--line);
+        overflow-x: auto; scrollbar-width: none;
+      }
+      .toc::-webkit-scrollbar { display: none; }
+      .toc p, .toc .bar { display: none; }
+      .toc ul { display: flex; gap: 4px; width: max-content; }
+      .toc a { padding: 8px 14px; border-radius: 999px; font-size: 14px; white-space: nowrap; }
+      .toc a::before { display: none; }
+      .toc a.on { background: var(--ink); color: #fff; }
+
+      section.part { scroll-margin-top: 140px; padding-bottom: 80px; }
+    }
+
+    @media (max-width: 760px) {
+      .topbar { padding: 0 5vw; }
+      .hero { padding: 100px 5vw 0; }
+      .layout { padding-left: 5vw; padding-right: 5vw; }
+      .toc { margin-left: -5vw; margin-right: -5vw; padding-left: 5vw; padding-right: 5vw; }
+      .facts { grid-template-columns: 1fr 1fr; }
+      .facts div:nth-child(3) { padding-left: 0; border-left: 0; }
+      .facts div:nth-child(n+3) { border-top: 1px solid var(--line); }
+      .hero .media { --r: 4 / 3; }
+      .cards, .grid2, .grid3, .stats, .ba { grid-template-columns: 1fr; }
+      .rules li { grid-template-columns: 1fr; gap: 6px; }
+      .stage { padding: 20px; }
+      .stage .grid3 { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .stage .ph { padding: 8px; font-size: 11px; }
+      .stage .ph b { font-size: 12px; }
+      .next { padding: 36px 5vw 48px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar" id="topbar">
+    <a class="logo" href="index.html" aria-label="Samuel, home">Samuel<i>.</i></a>
+    <a class="back" href="index.html#projects"><span aria-hidden="true">←</span> All work</a>
+  </header>
+
+  <!-- ================= HERO ================= -->
+  <div class="hero">
+    <span class="kicker">Case study · Mobile App · Web3</span>
+    <h1>Cino Wallet<br /><em>[One line on what it does].</em></h1>
+
+    <!-- EDIT: replace both # with the real store links -->
+    <div class="stores">
+      <a class="store" href="#" target="_blank" rel="noopener" aria-label="Download Cino Wallet on the App Store">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.700 2.400 2.900 2.300 1.200 0 1.600-.7 3-.7s1.800.7 3 .7c1.300 0 2.100-1.100 2.800-2.300.9-1.300 1.300-2.600 1.300-2.700-.1 0-2.500-1-2.500-3.700zM14.200 5.800c.6-.8 1.100-1.800.9-2.900-.9 0-2 .6-2.700 1.400-.6.700-1.100 1.800-1 2.800 1 .1 2.100-.5 2.800-1.300z"/></svg>
+        <span><small>Download on the</small><b>App Store</b></span>
+      </a>
+      <a class="store" href="#" target="_blank" rel="noopener" aria-label="Get Cino Wallet on Google Play">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.2 2.6c-.3.3-.5.8-.5 1.400v16c0 .6.2 1.100.5 1.400l9-9.400-9-9.400zM14.600 13.400l-9.800 9.100c.4.2.9.2 1.500-.1l12-6.800-3.700-2.200zM18.300 8.500L6.300 1.600c-.6-.3-1.100-.3-1.500-.1l9.800 9.100 3.700-2.100zM19.700 9.300l-3.600 2.100 3.600 2.200 2.300-1.300c.8-.5.8-1.700 0-2.200l-2.300-.8z"/></svg>
+        <span><small>Get it on</small><b>Google Play</b></span>
+      </a>
+    </div>
+
+    <!-- EDIT: fill these four in -->
+    <dl class="facts">
+      <div><dt>Role</dt><dd>Mobile App Designer</dd></div>
+      <div><dt>Timeline</dt><dd>Nov 2025 — Apr 2026</dd></div>
+      <div><dt>Platform</dt><dd>iOS &amp; Android</dd></div>
+      <div><dt>Tools</dt><dd>Figma, [add more]</dd></div>
+    </dl>
+
+    <figure class="media">
+      <div class="ph"><b>Hero image</b>Wide cover of the app · 2100 × 900 px</div>
+    </figure>
+  </div>
+
+  <!-- ================= BODY ================= -->
+  <div class="layout">
+
+    <!-- sticky side menu: the dot turns orange for the section you are reading -->
+    <aside class="toc" aria-label="On this page">
+      <p>On this page</p>
+      <ul id="toc">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#problem">The Problem</a></li>
+        <li><a href="#insight">Design Insight</a></li>
+        <li><a href="#direction">Design Direction</a></li>
+        <li><a href="#constraints">Constraints</a></li>
+        <li><a href="#decisions">Design Decisions</a></li>
+        <li><a href="#solution">The Solution</a></li>
+        <li><a href="#outcomes">Outcomes</a></li>
+        <li><a href="#learnings">Learnings</a></li>
+      </ul>
+      <div class="bar"><span id="progress"></span></div>
+    </aside>
+
+    <main class="story">
+
+      <!-- 01 OVERVIEW -->
+      <section class="part reveal" id="overview">
+        <span class="num">01</span>
+        <h2>Overview</h2>
+        <p class="lead">Cino Wallet is a mobile wallet for [who it serves]. I was the designer from [start] to [launch], responsible for [research, flows, UI, prototypes].</p>
+        <p class="t">[Two or three sentences of context: what Cino is, who the users are, and what the team set out to achieve. Keep the numbers and claims to ones you can stand behind.]</p>
+        <figure class="media">
+          <div class="ph"><b>Overview image</b>App on a phone, or the key screens together · 1600 × 1000 px</div>
+        </figure>
+      </section>
+
+      <!-- 02 THE PROBLEM -->
+      <section class="part reveal" id="problem">
+        <span class="num">02</span>
+        <h2>The Problem</h2>
+        <p class="lead">[One sentence that names the problem in the user's words, not yours.]</p>
+        <p class="t">[Explain what was going wrong, for whom, and why it mattered to the business. Two short paragraphs at most.]</p>
+
+        <div class="cards">
+          <div class="card"><span class="n">1</span><h3>[Pain point one]</h3><p>[A line on what users struggled with.]</p></div>
+          <div class="card"><span class="n">2</span><h3>[Pain point two]</h3><p>[A line on what users struggled with.]</p></div>
+          <div class="card"><span class="n">3</span><h3>[Pain point three]</h3><p>[A line on what users struggled with.]</p></div>
+        </div>
+
+        <figure class="media">
+          <div class="ph"><b>Problem image</b>Old flow, competitor screens or a user journey · 1600 × 1000 px</div>
+        </figure>
+      </section>
+
+      <!-- 03 DESIGN INSIGHT -->
+      <section class="part reveal" id="insight">
+        <span class="num">03</span>
+        <h2>Design Insight</h2>
+        <p class="lead">[What you learned that changed how you approached the design.]</p>
+
+        <div class="pull">
+          <q>“[A real quote from a user interview, or the single insight in one sentence.]”</q>
+          <small>[Who said it, or where the insight came from]</small>
+        </div>
+
+        <p class="t">[How you found it: interviews, usability tests, analytics, competitor review. Then what it told you.]</p>
+
+        <div class="grid2">
+          <figure class="media"><div class="ph" style="--r:4/3"><b>Research image 1</b>Notes, survey results or affinity map · 1200 × 900</div></figure>
+          <figure class="media"><div class="ph" style="--r:4/3"><b>Research image 2</b>Persona or user journey · 1200 × 900</div></figure>
+        </div>
+      </section>
+
+      <!-- 04 DESIGN DIRECTION -->
+      <section class="part reveal" id="direction">
+        <span class="num">04</span>
+        <h2>Design Direction</h2>
+        <p class="lead">[The idea that guided every screen, in one sentence.]</p>
+        <p class="t">[Describe the look and feel you aimed for and why it suits the users.]</p>
+
+        <div class="chips" aria-label="Design principles">
+          <span>[Principle one]</span><span>[Principle two]</span><span>[Principle three]</span><span>[Principle four]</span>
+        </div>
+
+        <div class="grid3">
+          <figure class="media"><div class="ph" style="--r:1/1"><b>Moodboard</b>1000 × 1000</div></figure>
+          <figure class="media"><div class="ph" style="--r:1/1"><b>Colour &amp; type</b>1000 × 1000</div></figure>
+          <figure class="media"><div class="ph" style="--r:1/1"><b>Early sketches</b>1000 × 1000</div></figure>
+        </div>
+      </section>
+
+      <!-- 05 CONSTRAINTS -->
+      <section class="part reveal" id="constraints">
+        <span class="num">05</span>
+        <h2>Constraints</h2>
+        <p class="lead">[What limited the design: time, tech, regulation, team size.]</p>
+
+        <ul class="rules">
+          <li><b>[Constraint one]</b><span>[How it limited the work and what you did about it.]</span></li>
+          <li><b>[Constraint two]</b><span>[How it limited the work and what you did about it.]</span></li>
+          <li><b>[Constraint three]</b><span>[How it limited the work and what you did about it.]</span></li>
+        </ul>
+      </section>
+
+      <!-- 06 DESIGN DECISIONS -->
+      <section class="part reveal" id="decisions">
+        <span class="num">06</span>
+        <h2>Design Decisions</h2>
+        <p class="lead">[Introduce the two or three choices that mattered most.]</p>
+
+        <!-- decision A: before / after -->
+        <article class="decision">
+          <span class="tag">Decision 1</span>
+          <h3>[Name the decision]</h3>
+          <p class="t">[What options you had, what you chose, and the reason.]</p>
+          <div class="ba">
+            <figure class="media"><div class="ph" style="--r:4/5"><b>Before</b>Earlier version · 1000 × 1250</div><figcaption><b>Before:</b> [what was wrong]</figcaption></figure>
+            <figure class="media"><div class="ph" style="--r:4/5"><b>After</b>Final version · 1000 × 1250</div><figcaption><b>After:</b> [what improved]</figcaption></figure>
+          </div>
+        </article>
+
+        <!-- decision B: one wide image -->
+        <article class="decision">
+          <span class="tag">Decision 2</span>
+          <h3>[Name the decision]</h3>
+          <p class="t">[What options you had, what you chose, and the reason.]</p>
+          <figure class="media"><div class="ph"><b>Decision 2 image</b>Flow or screens that show the choice · 1600 × 1000</div></figure>
+        </article>
+
+        <!-- decision C: three screens -->
+        <article class="decision">
+          <span class="tag">Decision 3</span>
+          <h3>[Name the decision]</h3>
+          <p class="t">[What options you had, what you chose, and the reason.]</p>
+          <div class="grid3">
+            <figure class="media"><div class="ph" style="--r:9/16"><b>Screen 1</b>900 × 1600</div></figure>
+            <figure class="media"><div class="ph" style="--r:9/16"><b>Screen 2</b>900 × 1600</div></figure>
+            <figure class="media"><div class="ph" style="--r:9/16"><b>Screen 3</b>900 × 1600</div></figure>
+          </div>
+        </article>
+      </section>
+
+      <!-- 07 THE SOLUTION -->
+      <section class="part reveal" id="solution">
+        <span class="num">07</span>
+        <h2>The Solution</h2>
+        <p class="lead">[Describe the finished product in two sentences.]</p>
+
+        <div class="stage">
+          <div class="grid3">
+            <div class="ph" style="--r:9/19"><b>Screen</b>Home · 900 × 1900</div>
+            <div class="ph" style="--r:9/19"><b>Screen</b>Key flow · 900 × 1900</div>
+            <div class="ph" style="--r:9/19"><b>Screen</b>Result · 900 × 1900</div>
+          </div>
+        </div>
+
+        <p class="t">[Walk through the main features and what each one solves.]</p>
+
+        <figure class="media">
+          <div class="ph"><b>Prototype or video</b>Screen recording or full flow overview · 1600 × 1000</div>
+          <figcaption>[Optional: link the Figma prototype]</figcaption>
+        </figure>
+      </section>
+
+      <!-- 08 OUTCOMES -->
+      <section class="part reveal" id="outcomes">
+        <span class="num">08</span>
+        <h2>Outcomes</h2>
+        <p class="lead">[What changed because of the design.]</p>
+
+        <!-- EDIT: use only real numbers. Replace 00% and the caption. -->
+        <div class="stats">
+          <div class="stat"><strong>00%</strong><span>[Metric one, and how it was measured]</span></div>
+          <div class="stat"><strong>00%</strong><span>[Metric two, and how it was measured]</span></div>
+          <div class="stat"><strong>0.0</strong><span>[Metric three, or a user rating]</span></div>
+        </div>
+
+        <p class="t">[If you have no hard numbers yet, describe the qualitative result: feedback from users or the team.]</p>
+      </section>
+
+      <!-- 09 LEARNINGS -->
+      <section class="part reveal" id="learnings">
+        <span class="num">09</span>
+        <h2>Learnings</h2>
+        <p class="lead">[What this project taught you.]</p>
+
+        <ul class="learn">
+          <li><i>1</i><div><b>[Lesson one]</b><p>[A line on what you would repeat or do differently.]</p></div></li>
+          <li><i>2</i><div><b>[Lesson two]</b><p>[A line on what you would repeat or do differently.]</p></div></li>
+          <li><i>3</i><div><b>[Lesson three]</b><p>[A line on what you would repeat or do differently.]</p></div></li>
+        </ul>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= NEXT PROJECT ================= -->
+  <aside class="next">
+    <div class="next-in">
+      <div>
+        <small>Next project</small>
+        <h2>BaseConnect</h2>
+      </div>
+      <!-- change this link when the BaseConnect page exists -->
+      <a class="go" href="index.html#projects">View all work <span aria-hidden="true">→</span></a>
+    </div>
+  </aside>
+
+  <script>
+    /* top bar gets a line once you scroll */
+    const topbar = document.getElementById("topbar");
+    addEventListener("scroll", () => topbar.classList.toggle("scrolled", scrollY > 8), { passive: true });
+
+    /* side menu: highlight the section being read */
+    (function spy() {
+      const links = [...document.querySelectorAll("#toc a")];
+      const parts = links.map(a => document.querySelector(a.getAttribute("href")));
+      const bar = document.getElementById("progress");
+
+      function update() {
+        const mark = innerHeight * 0.35;
+        let current = 0;
+        parts.forEach((p, i) => { if (p.getBoundingClientRect().top <= mark) current = i; });
+        // at the very bottom, the last item wins
+        if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) current = parts.length - 1;
+        links.forEach((a, i) => a.classList.toggle("on", i === current));
+        bar.style.width = ((current + 1) / parts.length * 100) + "%";
+
+        // keep the active chip visible in the mobile strip
+        const strip = links[current].closest(".toc");
+        if (strip.scrollWidth > strip.clientWidth) {
+          strip.scrollTo({ left: links[current].offsetLeft - 20, behavior: "smooth" });
+        }
+      }
+      addEventListener("scroll", update, { passive: true });
+      addEventListener("resize", update);
+      update();
+    })();
+
+    /* fade sections in */
+    (function reveal() {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+      }, { threshold: 0.05 });
+      document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+    })();
+  </script>
+</body>
+</html>
