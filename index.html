@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Olujola Samuel | Portfolio</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@400;500;700&family=Instrument+Serif:ital@1&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet" />
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --page: #ffffff;
+      --ink: #161616;
+      --muted: #55575b;
+      --line: #e4e4e2;
+      --accent: #ff6a2b;   /* flower orange: underline + full stop on the name */
+      --head: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;   /* headers */
+      --body: "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;         /* subtext + everything else */
+      --sans: var(--body);
+      --mono: var(--body);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    html, body {
+      background: var(--page);
+      color: var(--ink);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body.loading { overflow: hidden; }
+    body.dragging, body.dragging * { cursor: grabbing !important; user-select: none; }
+
+    /* =====================================================
+       LOADER  (name is written, then floats up to the top)
+       ===================================================== */
+    #loader {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    #loader::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: #0b0b0f;
+      transition: opacity 0.9s ease 0.15s;
+    }
+
+    #loader.lift::before { opacity: 0; }
+
+    .signature {
+      position: relative;
+      width: min(90vw, 760px);
+      height: auto;
+      overflow: visible;
+      transform-origin: center center;
+      transition: transform 1.2s cubic-bezier(0.7, 0, 0.2, 1);
+    }
+
+    /* --lx / --ly / --ls are measured by script so the name lands exactly on the top-bar slot */
+    #loader.lift .signature {
+      transform: translate(var(--lx, 0px), var(--ly, 0px)) scale(var(--ls, 0.2));
+    }
+
+    #loader.lift #underline { stroke-width: 6; transition: stroke-width 1.2s ease; }
+    #loader.lift .signature text { stroke-width: 3px; }
+    .signature tspan.dot, .who-sig tspan.dot { fill: var(--accent); stroke: var(--accent); }
+
+    .signature text {
+      font-family: "Mrs Saint Delafield", cursive;
+      font-size: 220px;
+      fill: #f5f1e8;
+      stroke: #f5f1e8;
+      stroke-width: 1px;
+      stroke-linejoin: round;
+      transition: fill 0.7s ease, stroke 0.7s ease, stroke-width 1.2s ease;
+    }
+
+    #loader.lift .signature text { fill: var(--ink); stroke: var(--ink); }
+
+    #reveal-rect {
+      width: 0;
+      animation: write 3.2s cubic-bezier(0.45, 0.05, 0.35, 1) 0.4s forwards;
+    }
+
+    @keyframes write { from { width: 0; } to { width: 800px; } }
+
+    #pen {
+      fill: var(--accent);
+      opacity: 0;
+      filter: drop-shadow(0 0 8px var(--accent));
+      animation:
+        pen-move 3.2s cubic-bezier(0.45, 0.05, 0.35, 1) 0.4s forwards,
+        pen-fade 3.8s linear 0.4s forwards;
+    }
+
+    @keyframes pen-move { from { transform: translateX(0); } to { transform: translateX(800px); } }
+    @keyframes pen-fade { 0% { opacity: 0; } 5% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
+
+    #underline {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 700;
+      stroke-dashoffset: 700;
+      animation: draw-line 1s ease-out 3.7s forwards;
+    }
+
+    @keyframes draw-line { to { stroke-dashoffset: 0; } }
+
+    /* =====================================================
+       TOP BAR  (identity · pill nav · clock + actions)
+       ===================================================== */
+    .topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      height: 66px;
+      padding: 0 7.8vw;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+    }
+
+    .who { display: block; justify-self: start; text-decoration: none; }
+
+    /* same drawing as the loader, so the name can land on it exactly */
+    .who-sig {
+      display: block;
+      width: 200px;
+      height: 80px;
+      margin: -13px 0 -1px -44px;
+      overflow: visible;
+      opacity: 0;
+    }
+
+    body.landed .who-sig { opacity: 1; }
+
+    .who-line {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 6;
+      stroke-linecap: round;
+    }
+
+    .who-sig text {
+      font-family: "Mrs Saint Delafield", cursive;
+      font-size: 220px;
+      fill: var(--ink);
+      stroke: var(--ink);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+    }
+
+    .seg {
+      display: flex; gap: 2px;
+      padding: 4px;
+      background: #f8f8f7;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .seg a {
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #6a6a6a;
+      text-decoration: none;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .seg a:hover { color: var(--ink); }
+    .seg a.on { background: #fff; color: var(--ink); border-color: var(--line); box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+
+    .tools { display: flex; align-items: center; gap: 10px; justify-self: end; }
+
+    .pill {
+      height: 36px;
+      padding: 0 16px;
+      display: inline-flex; align-items: center; gap: 6px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      font-size: 14px; font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .pill span { font-size: 12px; color: #3a5bd0; }
+    .pill.dark { background: #0f0f0f; border-color: #0f0f0f; color: #fff; font-weight: 600; }
+    .pill:hover { opacity: 0.85; }
+
+    /* =====================================================
+       HERO  (positions measured from the reference, 1366×633)
+       ===================================================== */
+    .hero {
+      position: relative;
+      height: 100vh;
+      min-height: 560px;
+      overflow: hidden;
+    }
+
+    .hero-copy {
+      position: absolute;
+      z-index: 3;
+      left: 8.6vw;
+      top: 135px;
+    }
+
+    .flower-gap { height: 72px; }   /* empty space where the flower used to be */
+
+    .hero h1 {
+      max-width: 640px;
+      font-family: var(--head);
+      font-size: clamp(2.1rem, 3.6vw, 3.3rem);
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      font-weight: 400;
+      color: #141414;
+    }
+
+    .hero h1 .l1 { display: block; }
+    .hero h1 .l2 { color: #858585; }
+
+    .hero .sub-text {
+      margin-top: 28px;
+      max-width: 430px;
+      font-size: 15px;
+      line-height: 1.5;
+      font-weight: 400;
+      letter-spacing: -0.005em;
+      color: #1c1c1c;
+    }
+
+    /* "Reach out": same dark pill as the Resume button, a little bigger */
+    .hero .reach, .foot .reach {
+      display: inline-flex;
+      align-items: center;
+      height: 48px;
+      gap: 10px;
+      margin-top: 28px;
+      padding: 0 30px;
+      border-radius: 999px;
+      background: #0f0f0f;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 400;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .hero .reach:hover, .foot .reach:hover { opacity: 0.85; }
+
+    /* =====================================================
+       ID BADGE  (rope physics: strap + clip + card, see script)
+       ===================================================== */
+    .rope {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .rope .strap { fill: none; stroke: #17171a; stroke-width: 24; stroke-linejoin: round; stroke-linecap: butt; }
+    .rope .stitch { fill: none; stroke: rgba(255,255,255,0.14); stroke-width: 1; stroke-dasharray: 3 4; }
+    .rope text {
+      font-family: var(--mono);
+      font-size: 7px;
+      letter-spacing: 0.3em;
+      fill: rgba(255, 255, 255, 0.78);
+    }
+
+    .badge {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 262px;
+      z-index: 4;
+      transform-origin: 0 0;     /* JS places the clip centre on the end of the strap */
+      will-change: transform;
+    }
+
+    .badge-in { transform-origin: 131px 12px; }
+
+    .clip {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      margin: 0 auto -10px;
+      border-radius: 7px;
+      background: linear-gradient(180deg, #f6f6f6, #aeb2b8);
+      border: 1px solid #9aa0a6;
+      z-index: 2;
+    }
+
+    .clip::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 9px;
+      width: 22px;
+      height: 7px;
+      border-radius: 5px;
+      transform: translateX(-50%);
+      background: #5b5f66;
+      opacity: 0.35;
+    }
+
+    .scene {
+      perspective: 1100px;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      height: 404px;
+      transform-style: preserve-3d;
+    }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      border-radius: 22px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      box-shadow: 0 34px 60px -22px rgba(0, 0, 0, 0.32), 0 6px 16px -6px rgba(0, 0, 0, 0.18);
+    }
+
+    /* ---------- front ---------- */
+    .front {
+      background: linear-gradient(160deg, #f7f8fa, #dde0e5);
+      border: 1px solid #cdd1d7;
+      padding: 33px 11px 11px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .front::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      width: 44px;
+      height: 8px;
+      transform: translateX(-50%);
+      border-radius: 6px;
+      background: #c3c7cd;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+
+    .front::after {
+      content: "";
+      position: absolute;
+      top: 11px;
+      left: 14px;
+      right: 14px;
+      height: 7px;
+      background:
+        radial-gradient(circle at 3.5px 3.5px, #c3c7cd 3.5px, transparent 4px) left top / 7px 7px no-repeat,
+        radial-gradient(circle at 3.5px 3.5px, #c3c7cd 3.5px, transparent 4px) right top / 7px 7px no-repeat;
+    }
+
+    .photo {
+      position: relative;
+      flex: 0 0 213px;
+      border-radius: 8px 8px 0 0;
+      overflow: hidden;
+      background: linear-gradient(180deg, #c9cdd6, #9aa1ad);
+    }
+
+    .photo svg,
+    .photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 12%;
+      display: block;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+
+    .photo .tag {
+      position: absolute;
+      top: 13px;
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      color: rgba(255, 255, 255, 0.95);
+      text-transform: uppercase;
+    }
+
+    .photo .tag.l { left: 12px; }
+    .photo .tag.r { right: 12px; }
+
+    .info {
+      flex: 1;
+      background: #fff;
+      border-radius: 0 0 10px 10px;
+      padding: 14px 16px 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info h3 { font-family: var(--head); font-size: 15px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
+
+    .info .sub {
+      margin-top: 6px;
+      font-family: var(--mono);
+      font-size: 8.5px;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .info .at {
+      margin-top: 17px;
+      font-family: var(--mono);
+      font-size: 8.5px;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .info .places { margin-top: 5px; font-size: 11px; font-weight: 500; }
+
+    .barcode { width: 64px; height: 18px; display: block; }
+
+    .info .row {
+      margin-top: auto;
+      padding: 0 0 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 8.5px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .info .avail { display: flex; align-items: center; gap: 6px; color: var(--ink); }
+    .info .avail::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #22a05a;
+    }
+
+    /* =====================================================
+       WORK  (intro + case rows)
+       ===================================================== */
+    .work {
+      position: relative;
+      background: #efefea;
+      padding: 120px 7.8vw 120px;
+    }
+
+    .work-lines {
+      position: absolute;
+      left: 0; top: 0;
+      width: 100%; height: 640px;
+      pointer-events: none;
+    }
+
+    .work-lines path { fill: none; stroke: rgba(0, 0, 0, 0.055); stroke-width: 1.2; }
+
+    .work-top { position: relative; margin: 0 auto 48px; max-width: 1240px; }
+
+    .btn-out {
+      height: 48px; padding: 0 30px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border: 1px solid #141414;
+      border-radius: 999px;
+      color: #141414;
+      text-decoration: none;
+      font-size: 16px;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    .btn-out:hover { background: #141414; color: #fff; }
+
+    .work-more { position: relative; display: flex; justify-content: center; margin-top: 56px; }
+
+    /* two tiles per row, edge to edge: big colour panels with the work inside, name + description underneath */
+    .cases {
+      position: relative;
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 44px 14px;
+      padding-bottom: 20px;
+    }
+
+    .cases .case {
+      position: relative;
+      display: flex; flex-direction: column;
+      translate: 0 var(--lift, 0px);
+      transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1), translate 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    /* hover: the tile pops up a little */
+    .cases .case:hover { --lift: -10px; }
+    .case:hover .shot { box-shadow: 0 36px 60px -30px rgba(0, 0, 0, 0.4); }
+    .case .shot .phones, .case .shot .browser { transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+    .case:hover .shot .phones, .case:hover .shot .browser { transform: translateY(-8px) scale(1.02); }
+    .case .shot > img { transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); }
+    .case:hover .shot > img { transform: scale(1.04); }
+
+    .shot {
+      position: relative;
+      aspect-ratio: 1.28;
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--g);
+      display: flex; align-items: flex-end; justify-content: center;
+      transition: box-shadow 0.35s ease;
+    }
+
+    .shot > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* round arrow that appears on hover */
+    .case .go {
+      position: absolute; top: 16px; right: 16px;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: #fff; color: #141414;
+      display: grid; place-items: center;
+      font-size: 17px;
+      opacity: 0; transform: scale(0.8);
+      transition: opacity 0.3s, transform 0.3s;
+      z-index: 2;
+    }
+
+    .case:hover .go { opacity: 1; transform: none; }
+
+    .case-meta { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 2px 0; }
+
+    .case h3 {
+      font-family: var(--head);
+      font-weight: 500;
+      font-size: 22px;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+    }
+
+    .tags { list-style: none; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+    .tags li { font-size: 12px; font-weight: 500; padding: 5px 11px; border-radius: 999px; border: 1px solid #d3d3cc; color: #55554f; }
+
+    .case-desc { padding: 8px 2px 0; font-size: 14px; line-height: 1.55; color: #77776f; max-width: 520px; }
+
+    /* the whole tile is the link */
+    .case-link { position: absolute; inset: 0; z-index: 3; }
+
+    /* browser-window placeholder (swap for your screenshot via img) */
+    .browser {
+      width: 86%; height: 78%;
+      align-self: center;
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--ph, #fff);
+      box-shadow: 0 24px 50px -20px rgba(0, 0, 0, 0.45);
+    }
+
+    .browser .bar { display: flex; gap: 6px; padding: 10px 12px; border-bottom: 1px solid var(--bar, rgba(0, 0, 0, 0.08)); }
+    .browser .bar span { width: 8px; height: 8px; border-radius: 50%; background: var(--bar, rgba(0, 0, 0, 0.14)); }
+    .browser .pg { padding: 18px 20px; }
+    .browser .pg b { display: block; width: 56%; height: 16px; border-radius: 5px; background: var(--a); margin-bottom: 12px; }
+    .browser .pg i { display: block; height: 8px; width: 80%; border-radius: 4px; background: var(--bar, rgba(0, 0, 0, 0.08)); margin-bottom: 8px; }
+    .browser .pg i:nth-of-type(2) { width: 62%; }
+    .browser .blocks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+    .browser .blocks u { display: block; height: 74px; border-radius: 8px; background: var(--bar, rgba(0, 0, 0, 0.07)); }
+    .browser .blocks u:first-child { background: var(--a); opacity: 0.9; }
+
+    /* placeholder devices: replace by setting img in the PROJECTS list (script) */
+    .phones { display: flex; align-items: flex-end; gap: 4%; width: 74%; height: 86%; }
+
+    .phone {
+      flex: 1; height: 80%;
+      padding: 10px;
+      border-radius: 24px 24px 0 0;
+      background: var(--ph, #fff);
+      box-shadow: 0 20px 40px -18px rgba(0, 0, 0, 0.35);
+    }
+
+    .phone.main { flex: 1.2; height: 100%; }
+    .phone b { display: block; height: 34%; border-radius: 14px; background: var(--a); margin-bottom: 10px; }
+    .phone i { display: block; height: 8px; border-radius: 4px; background: var(--bar, rgba(0, 0, 0, 0.08)); margin-bottom: 8px; }
+    .phone i:nth-child(odd) { width: 70%; }
+
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+    .reveal.in { opacity: 1; transform: none; }
+
+    @media (max-width: 900px) {
+      .work { padding: 90px 5vw 80px; }
+      .cases { grid-template-columns: 1fr; gap: 34px; padding-bottom: 0; }
+      .work-more { margin-top: 40px; }
+    }
+
+    /* =====================================================
+       EXPERIENCE
+       ===================================================== */
+    .xp { background: #fff; padding: 120px 7.8vw 120px; }
+    .xp-in { max-width: 1240px; margin: 0 auto; }
+
+    .xp-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 48px; }
+
+    .xp-head p { max-width: 300px; font-size: 14px; line-height: 1.55; color: #8a8a84; text-align: right; }
+
+    .xp-row {
+      display: grid;
+      grid-template-columns: 330px 1fr auto;
+      align-items: center;
+      padding: 18px 0;
+      border-bottom: 1px solid #ececea;
+      color: #141414;
+      font-size: 14px;
+    }
+
+    .xp-co { display: flex; align-items: center; gap: 14px; }
+
+    .xp-logo {
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      display: grid; place-items: center;
+      font-size: 11px; font-weight: 700;
+      background: var(--c, #141414);
+      color: var(--f, #fff);
+      overflow: hidden;
+    }
+
+    .xp-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    .xp-name { font-weight: 500; }
+    .xp-yrs { color: #7c7c76; text-align: right; white-space: nowrap; }
+
+    @media (max-width: 760px) {
+      .xp { padding: 90px 5vw 80px; }
+      .xp-head { flex-direction: column; align-items: flex-start; }
+      .xp-head p { text-align: left; }
+      .xp-row { grid-template-columns: 1fr auto; row-gap: 6px; }
+      .xp-role { grid-column: 1; grid-row: 2; color: #6a6a64; }
+      .xp-yrs { grid-column: 2; grid-row: 1; }
+    }
+
+    /* =====================================================
+       TESTIMONIALS  ·  a board of notes you can pick up and throw around
+       ===================================================== */
+    .voices {
+      position: relative;
+      background: #0e0e0f;
+      color: #f2f2ee;
+      padding: 120px 7.8vw 120px;
+      overflow: hidden;
+    }
+
+    .voices-in { position: relative; max-width: 1240px; margin: 0 auto; }
+
+    .voices-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; margin-bottom: 48px; }
+
+    .voices-tools { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #8d8d88; }
+
+    .tidy {
+      height: 40px; padding: 0 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      background: transparent;
+      color: #f2f2ee;
+      font: 500 14px var(--body);
+      cursor: pointer;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    .tidy:hover { background: #f2f2ee; color: #0e0e0f; }
+
+    .board { position: relative; height: 780px; }
+
+    .ghost-quote {
+      position: absolute; left: 50%; top: 50%;
+      transform: translate(-50%, -46%);
+      font-family: "Instrument Serif", Georgia, serif;
+      font-style: italic;
+      font-size: min(52vw, 760px);
+      line-height: 1;
+      color: #171718;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .note {
+      position: absolute; left: 0; top: 0;
+      width: 288px; min-height: 252px;
+      padding: 26px 24px 22px;
+      border-radius: 6px;
+      background: var(--bg);
+      color: #141414;
+      box-shadow: 0 26px 44px -22px rgba(0, 0, 0, 0.8), 0 2px 0 rgba(255, 255, 255, 0.25) inset;
+      display: flex; flex-direction: column; justify-content: space-between; gap: 22px;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+      opacity: 0;
+      will-change: transform;
+    }
+
+    .note.in { opacity: 1; }
+    .note.settle { transition: transform 0.95s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.5s ease; }
+    .note.grab { cursor: grabbing; box-shadow: 0 40px 60px -22px rgba(0, 0, 0, 0.9); }
+
+    /* piece of tape holding each note */
+    .note::before {
+      content: "";
+      position: absolute; top: -10px; left: 50%;
+      width: 74px; height: 22px;
+      transform: translateX(-50%) rotate(-3deg);
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(2px);
+    }
+
+    .note q { display: block; quotes: none; font-family: var(--head); font-size: 17px; line-height: 1.42; letter-spacing: -0.02em; }
+    .note q::before { content: "“"; display: block; font-family: "Instrument Serif", Georgia, serif; font-style: italic; font-size: 54px; line-height: 0.6; margin-bottom: 10px; }
+
+    .who2 { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgba(0, 0, 0, 0.14); }
+    .who2 b { display: block; font-size: 14px; font-weight: 600; line-height: 1.2; }
+    .who2 small { display: block; font-size: 12px; color: rgba(0, 0, 0, 0.55); line-height: 1.3; margin-top: 2px; }
+
+    @media (max-width: 900px) {
+      .voices { padding: 90px 5vw 90px; }
+      .voices-head { flex-direction: column; align-items: flex-start; }
+      .voices-tools span, .tidy, .ghost-quote { display: none; }
+      .board { height: auto; display: flex; flex-direction: column; align-items: center; gap: 26px; }
+      .note { position: relative; width: 100%; max-width: 420px; cursor: default; touch-action: auto; }
+      .note:nth-child(odd) { rotate: -1.5deg; }
+      .note:nth-child(even) { rotate: 1.5deg; }
+    }
+
+    /* one heading style for every section: smaller, left aligned */
+    .work h2, .xp h2, .voices h2 {
+      font-family: var(--head);
+      font-weight: 400;
+      font-size: clamp(1.9rem, 3.1vw, 2.7rem);
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+      text-align: left;
+      max-width: none;
+    }
+
+    .work h2 { color: #141414; }
+
+    /* =====================================================
+       FOOTER
+       ===================================================== */
+    .foot { background: #efefea; color: #141414; padding: 110px 7.8vw 44px; }
+    .foot-in { max-width: 1240px; margin: 0 auto; }
+
+    .foot-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; flex-wrap: wrap; }
+
+    .foot-title {
+      font-family: var(--head);
+      font-weight: 400;
+      font-size: clamp(2.4rem, 5.4vw, 4.8rem);
+      line-height: 1.02;
+      letter-spacing: -0.05em;
+    }
+
+    .foot-title em {
+      display: block;
+      font: inherit;              /* same font, size and weight as "Have a product in mind?" */
+      letter-spacing: inherit;
+      color: var(--accent);
+    }
+
+    .foot-cta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .foot-cta .reach { margin-top: 0; }
+
+    /* copy-email button */
+    .copy {
+      position: relative;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: 1px solid #141414;
+      background: transparent;
+      color: #141414;
+      display: grid; place-items: center;
+      cursor: pointer;
+      transition: background 0.25s, color 0.25s;
+    }
+
+    .copy:hover { background: #141414; color: #fff; }
+    .copy svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .copy .ok { display: none; }
+    .copy.done .cp { display: none; }
+    .copy.done .ok { display: block; }
+
+    .copy::after {
+      content: "Copied!";
+      position: absolute; bottom: calc(100% + 10px); left: 50%;
+      padding: 5px 10px; border-radius: 6px;
+      background: #141414; color: #fff; font-size: 12px; white-space: nowrap;
+      opacity: 0; transform: translate(-50%, 4px); pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .copy.done::after { opacity: 1; transform: translate(-50%, 0); }
+
+    .foot-bottom {
+      margin-top: 90px;
+      padding-top: 26px;
+      border-top: 1px solid rgba(0, 0, 0, 0.12);
+      display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;
+      font-size: 14px; color: #77776f;
+    }
+
+    .foot-social { display: flex; gap: 28px; }
+    .foot-social a { color: #141414; text-decoration: none; padding-bottom: 2px; border-bottom: 1px solid transparent; transition: color 0.25s, border-color 0.25s; }
+    .foot-social a:hover { color: var(--accent); border-color: var(--accent); }
+
+    @media (max-width: 900px) {
+      .foot { padding: 80px 5vw 36px; }
+      .foot-bottom { margin-top: 56px; }
+    }
+
+    /* =====================================================
+       ENTRANCE (after the loader)
+       ===================================================== */
+    .rise {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    body.ready .rise { opacity: 1; transform: none; }
+    body.ready .d1 { transition-delay: 0.15s; }
+    body.ready .d2 { transition-delay: 0.3s; }
+    body.ready .d3 { transition-delay: 0.45s; }
+
+    .seg.rise, .tools.rise { transform: translateY(-14px); }
+
+    /* badge: fades in only (its transform is driven by the swing script) */
+    .badge.rise, .rope.rise { transform: none; transition: opacity 1s ease 0.5s; }
+
+
+    /* =====================================================
+       RESPONSIVE
+       ===================================================== */
+    @media (max-width: 960px) {
+      .hero {
+        height: auto;
+        min-height: 100vh;
+        padding: 680px 6vw 40vw;
+        display: flex;
+        flex-direction: column;
+      }
+      .hero-copy { position: relative; left: auto; top: auto; }
+      .hero h1 { font-size: clamp(2.2rem, 9vw, 3.6rem); }
+    }
+
+    @media (max-width: 900px) {
+      .topbar { padding: 0 5vw; }
+    }
+
+    /* =====================================================
+       MOBILE MENU (hamburger)
+       ===================================================== */
+    .burger { display: none; }
+    .menu { display: none; }
+
+    @media (max-width: 760px) {
+      .topbar { grid-template-columns: 1fr auto; }
+      .topbar > .seg, .topbar > .tools { display: none; }
+
+      .burger {
+        display: inline-flex; flex-direction: column; justify-content: center; align-items: center; gap: 5px;
+        width: 42px; height: 42px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: #fff;
+        cursor: pointer;
+        justify-self: end;
+      }
+
+      .burger span {
+        display: block; width: 18px; height: 1.5px; background: var(--ink); border-radius: 2px;
+        transition: transform 0.3s ease, opacity 0.2s ease;
+      }
+
+      .burger.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+      .burger.open span:nth-child(2) { opacity: 0; }
+      .burger.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+      .menu {
+        display: flex; flex-direction: column; gap: 6px;
+        position: fixed; top: 66px; left: 0; right: 0;
+        z-index: 49;
+        padding: 14px 5vw 24px;
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--line);
+        box-shadow: 0 24px 40px -24px rgba(0, 0, 0, 0.25);
+        opacity: 0; visibility: hidden; transform: translateY(-10px);
+        transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+      }
+
+      .menu.open { opacity: 1; visibility: visible; transform: none; }
+
+      .menu a.lnk {
+        padding: 14px 4px;
+        font-family: var(--head);
+        font-size: 22px; font-weight: 500; letter-spacing: -0.03em;
+        color: var(--ink); text-decoration: none;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .menu a.lnk.on { color: var(--accent); }
+
+      .menu a.pill { margin-top: 14px; height: 48px; justify-content: center; font-size: 16px; }
+    }
+
+    @media (max-width: 600px) {
+      .who-sig { width: 150px; height: 60px; margin: -10px 0 0 -20px; }
+      .seg a { padding: 8px 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card { transition-duration: 0.01s; }
+    }
+  </style>
+</head>
+<body class="loading">
+
+  <!-- ============ LOADING SCREEN ============ -->
+  <div id="loader" aria-label="Loading">
+    <svg class="signature" viewBox="0 0 800 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Samuel">
+      <defs>
+        <clipPath id="reveal">
+          <rect id="reveal-rect" x="0" y="-40" height="400" />
+        </clipPath>
+      </defs>
+      <g clip-path="url(#reveal)">
+        <text x="400" y="230" text-anchor="middle">Samuel<tspan class="dot">.</tspan></text>
+      </g>
+      <circle id="pen" cx="0" cy="170" r="5" />
+      <path id="underline" d="M150 265 C 300 285, 500 250, 650 268" />
+    </svg>
+  </div>
+
+  <!-- ============ TOP BAR ============ -->
+  <div class="topbar">
+    <a class="who" href="#home" aria-label="Samuel">
+      <svg class="who-sig" id="whoSig" viewBox="0 0 800 320" aria-hidden="true">
+        <path class="who-line" d="M150 265 C 300 285, 500 250, 650 268" />
+        <text x="400" y="230" text-anchor="middle">Samuel<tspan class="dot">.</tspan></text>
+      </svg>
+    </a>
+
+    <nav class="seg rise" aria-label="Primary">
+      <a class="on" href="#home">Home</a>
+      <!-- these two pages are not built yet; change the links when they are -->
+      <a href="work.html">Work</a>
+      <a href="about.html">About</a>
+    </nav>
+
+    <div class="tools rise">
+      <a class="pill dark" href="Samuel_Olujola_Resume.pdf" target="_blank" rel="noopener">Resume</a>
+    </div>
+
+    <!-- mobile only -->
+    <button class="burger" id="burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <nav class="menu" id="menu" aria-label="Mobile">
+    <a class="lnk on" href="#home">Home</a>
+    <a class="lnk" href="work.html">Work</a>
+    <a class="lnk" href="about.html">About</a>
+    <a class="pill dark" href="#resume">Resume</a>
+  </nav>
+
+  <!-- ============ HOME ============ -->
+  <header class="hero" id="home">
+
+    <div class="hero-copy">
+      <div class="flower-gap" aria-hidden="true"></div>
+
+      <h1 class="rise d1">
+        <span class="l1">Hi, I’m Olujola Samuel</span>
+        <span class="l2">A Product Designer &amp; Design Engineer</span>
+      </h1>
+
+      <p class="sub-text rise d2">
+        I design products people enjoy using, then build them in code, so what ships is what I designed.
+        From research and flows to polished interfaces and working front-end, I care about every detail in between.
+      </p>
+
+      <a class="reach rise d3" href="https://wa.me/2348106318464" target="_blank" rel="noopener"> <span aria-hidden="true">Reach out</span>→</a>
+    </div>
+
+    <!-- LANYARD STRAP (drawn by script from the rope physics) -->
+    <svg class="rope rise" aria-hidden="true">
+      <path id="ropeA" class="strap" d="" />
+      <path id="ropeB" class="strap" d="" />
+      <path id="stitchA" class="stitch" d="" />
+      <path id="stitchB" class="stitch" d="" />
+      <text dy="2.4"><textPath href="#ropeA" startOffset="10">SAMUEL · PORTFOLIO · 2026 · SAMUEL · PORTFOLIO · 2026 · SAMUEL · PORTFOLIO · 2026 ·</textPath></text>
+      <text dy="2.4"><textPath href="#ropeB" startOffset="10">SAMUEL · PORTFOLIO · 2026 · SAMUEL · PORTFOLIO · 2026 · SAMUEL · PORTFOLIO · 2026 ·</textPath></text>
+    </svg>
+
+    <!-- ID BADGE -->
+    <aside class="badge rise" id="badge" aria-label="Samuel's ID card">
+     <div class="badge-in" id="badgeIn">
+      <div class="clip"></div>
+
+      <div class="scene" id="scene">
+        <div class="card" id="card">
+
+          <!-- FRONT -->
+          <div class="face front">
+            <div class="photo">
+              <img src="Images/DP.jpg" alt="" srcset="">
+              <span class="tag l">Portfolio Pass</span>
+              <span class="tag r">2026</span>
+            </div>
+
+            <div class="info">
+              <!-- PLACEHOLDER TEXT: edit to match you -->
+              <h3>Design Engineer</h3>
+              <div class="sub">3+ Yrs</div>
+              <div class="at">Remote</div>
+              <div class="places">olujolaayomide16@gmail.com</div>
+              <div class="row">
+                <svg class="barcode" viewBox="0 0 101.4 20" preserveAspectRatio="none" role="img" aria-label="Barcode" fill="#141414"><rect x="0" width="2" height="20"/><rect x="3.6" width="1" height="20"/><rect x="5.7" width="3" height="20"/><rect x="9.8" width="1" height="20"/><rect x="12.4" width="1" height="20"/><rect x="14.5" width="2" height="20"/><rect x="17.6" width="1" height="20"/><rect x="20.200000000000003" width="3" height="20"/><rect x="24.300000000000004" width="2" height="20"/><rect x="27.400000000000006" width="1" height="20"/><rect x="30.000000000000007" width="1" height="20"/><rect x="32.10000000000001" width="2" height="20"/><rect x="35.20000000000001" width="3" height="20"/><rect x="39.80000000000001" width="1" height="20"/><rect x="41.90000000000001" width="2" height="20"/><rect x="45.000000000000014" width="1" height="20"/><rect x="47.600000000000016" width="1" height="20"/><rect x="49.70000000000002" width="3" height="20"/><rect x="53.80000000000002" width="1" height="20"/><rect x="56.40000000000002" width="2" height="20"/><rect x="59.50000000000002" width="1" height="20"/><rect x="61.60000000000002" width="2" height="20"/><rect x="65.20000000000002" width="3" height="20"/><rect x="69.30000000000001" width="1" height="20"/><rect x="71.4" width="1" height="20"/><rect x="74.0" width="2" height="20"/><rect x="77.1" width="1" height="20"/><rect x="79.19999999999999" width="3" height="20"/><rect x="83.79999999999998" width="1" height="20"/><rect x="85.89999999999998" width="2" height="20"/><rect x="88.99999999999997" width="2" height="20"/><rect x="92.59999999999997" width="1" height="20"/><rect x="94.69999999999996" width="1" height="20"/><rect x="96.79999999999995" width="3" height="20"/></svg>
+                <span class="avail">Available</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+     </div>
+    </aside>
+
+  </header>
+
+  <!-- ============ WORK ============ -->
+  <section class="work" id="projects">
+    <svg class="work-lines" viewBox="0 0 1400 640" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M-100 220 C 300 420, 900 120, 1500 300" />
+      <path d="M-100 520 C 400 220, 1000 560, 1500 240" />
+    </svg>
+
+    <div class="work-top">
+      <h2 class="reveal">Selected product work</h2>
+    </div>
+
+    <div class="cases" id="cases"></div>
+
+    <div class="work-more">
+      <a class="btn-out" href="#all-work">See all work</a>
+    </div>
+  </section>
+
+  <section class="xp" id="experience">
+    <div class="xp-in">
+      <div class="xp-head reveal">
+        <h2>Experience</h2>
+      </div>
+      <div id="xpList"></div>
+    </div>
+  </section>
+
+  <section class="voices" id="voices">
+    <div class="voices-in">
+      <div class="voices-head reveal">
+        <h2>Kind words from people I've built with.</h2>
+        <div class="voices-tools">
+          <button class="tidy" id="tidyBtn" type="button">Tidy up</button>
+        </div>
+      </div>
+
+      <div class="board" id="board">
+        <div class="ghost-quote" aria-hidden="true">“</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="foot" id="contact">
+    <div class="foot-in">
+      <div class="foot-top reveal">
+        <h2 class="foot-title">Have a product in mind? <em>Let's build it well.</em></h2>
+        <div class="foot-cta">
+          <!-- PLACEHOLDER: put your real email in the link -->
+          <a class="reach" id="emailLink" href="mailto:olujolaayomide16@gmail.com"><span aria-hidden="true">Email me</span>↗</a>
+          <button class="copy" id="copyEmail" type="button" aria-label="Copy email address" title="Copy email">
+            <svg class="cp" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2.5"/><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15"/></svg>
+            <svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="foot-bottom">
+        <span>© 2026 Olujola Samuel. All rights reserved.</span>
+        <!-- PLACEHOLDER: swap in your real profile links -->
+        <nav class="foot-social" aria-label="Social links">
+          <a href="http://linkedin.com/in/olujolasamuel" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="https://x.com/lexicon_uiux" target="_blank" rel="noopener">Twitter</a>
+          <a href="https://www.behance.net/samdexign9" target="_blank" rel="noopener">Behance</a>
+        </nav>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* =====================================================
+       LOADER SEQUENCE
+       writing ≈ 4.7s → name lifts to the top → home page animates in
+       ===================================================== */
+    const WRITE_DONE = 5000;
+
+    function runSequence() {
+      const loader = document.getElementById("loader");
+      setTimeout(() => {
+        // measure where the name has to land (the slot at the left of the top bar)
+        const sig = loader.querySelector(".signature").getBoundingClientRect();
+        const slot = document.getElementById("whoSig").getBoundingClientRect();
+        loader.style.setProperty("--ls", (slot.width / sig.width).toFixed(4));
+        loader.style.setProperty("--lx", (slot.left + slot.width / 2 - (sig.left + sig.width / 2)).toFixed(1) + "px");
+        loader.style.setProperty("--ly", (slot.top + slot.height / 2 - (sig.top + sig.height / 2)).toFixed(1) + "px");
+        loader.classList.add("lift");
+        setTimeout(() => {              // landed: the real name takes over
+          document.body.classList.add("landed");
+          loader.remove();
+        }, 1250);
+        setTimeout(() => {
+          document.body.classList.remove("loading");
+          document.body.classList.add("ready");
+        }, 600);
+      }, WRITE_DONE);
+    }
+
+    window.addEventListener("load", () => {
+      const heavy = document.fonts ? document.fonts.load('400 20px "Inter"') : Promise.resolve();
+      const ready = document.fonts ? document.fonts.ready : Promise.resolve();
+      Promise.all([heavy, ready]).then(() => {
+        runSequence();
+      });
+    });
+
+    const badge = document.getElementById("badge");
+    const scene = document.getElementById("scene");
+    const card  = document.getElementById("card");
+    const hero  = document.getElementById("home");
+    let dragging = false;
+
+    /* =====================================================
+       ID CARD · ROPE PHYSICS
+       A fixed point above the screen, a strap made of linked points,
+       then the card hanging from the clip like a rigid stick.
+       - drag the card anywhere: the strap stretches and the card swings
+       - let go: it swings, turns and settles back to hanging straight
+       The strap is fixed to the top, so the card can never detach.
+       ===================================================== */
+    const ropeA = document.getElementById("ropeA"), ropeB = document.getElementById("ropeB");
+    const stitchA = document.getElementById("stitchA"), stitchB = document.getElementById("stitchB");
+    const SPLIT = 19;                // half-gap between the two strands at the top (they meet at the clip)
+
+    const SEG = 8;                   // strap segments
+    const ANCHOR_Y = -40;            // fixed point sits above the screen
+    const ROPE_LEN = 205;            // strap length
+    const SEG_LEN = ROPE_LEN / SEG;
+    let SCALE = 1.25;                // card size multiplier (fits the screen, see fitCard)
+    let CARD_D = 204 * SCALE;        // clip → centre of card
+    const CLIP_Y = 12, HALF_W = 131; // clip centre inside the badge box
+    const GRAVITY = 2400;            // px / s²
+    const DAMP = 0.9955;             // air drag per step
+    const STEP = 1 / 120;
+    const ITER = 14;
+
+    const P = [];                    // 0..SEG = strap (SEG is the clip), SEG+1 = card centre
+    let anchorX = 0;
+    let startX = 0, movedTotal = 0;
+    const pointer = { x: 0, y: 0 };
+    const grab = { lam: 0.5, lat: 0 };
+
+    const badgeIn = document.getElementById("badgeIn");
+    function fitCard() {
+      const room = hero.clientHeight - (ANCHOR_Y + ROPE_LEN) - 14;
+      SCALE = Math.max(0.85, Math.min(1.1, room / 406));   // a touch bigger than before, never cut off
+      CARD_D = 204 * SCALE;
+      badgeIn.style.transform = `scale(${SCALE.toFixed(3)})`;
+    }
+
+    function getAnchorX() { return hero.clientWidth * (window.innerWidth <= 960 ? 0.5 : 0.725); }
+
+    function initRope() {
+      fitCard();
+      anchorX = getAnchorX();
+      P.length = 0;
+      for (let i = 0; i <= SEG; i++) {
+        const y = ANCHOR_Y + i * SEG_LEN;
+        P.push({ x: anchorX, y, px: anchorX, py: y, w: i === 0 ? 0 : 1 });
+      }
+      const y = P[SEG].y + CARD_D;
+      P.push({ x: anchorX, y, px: anchorX - 2.2, py: y, w: 0.35 });   // tiny push so it swings on load
+    }
+
+    function link(a, b, rest) {
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy) || 0.0001;
+      const ws = a.w + b.w;
+      if (!ws) return;
+      const k = (d - rest) / d / ws;
+      a.x += dx * k * a.w; a.y += dy * k * a.w;
+      b.x -= dx * k * b.w; b.y -= dy * k * b.w;
+    }
+
+    function applyDrag() {
+      const T = P[SEG], C = P[SEG + 1];
+      let ux = C.x - T.x, uy = C.y - T.y;
+      const d = Math.hypot(ux, uy) || 1;
+      ux /= d; uy /= d;
+      const nx = -uy, ny = ux;
+      const gx = T.x + (C.x - T.x) * grab.lam + nx * grab.lat;
+      const gy = T.y + (C.y - T.y) * grab.lam + ny * grab.lat;
+
+      // keep the target within what the strap can actually reach
+      const reach = ROPE_LEN + CARD_D * Math.max(grab.lam, 0.2) * 0.98;
+      let tx = pointer.x, ty = pointer.y;
+      const ddx = tx - anchorX, ddy = ty - ANCHOR_Y, dist = Math.hypot(ddx, ddy);
+      if (dist > reach) { tx = anchorX + ddx / dist * reach; ty = ANCHOR_Y + ddy / dist * reach; }
+
+      const ex = (tx - gx) * 0.5, ey = (ty - gy) * 0.5;
+      const aT = 1 - grab.lam, aC = grab.lam;
+      const den = aT * aT + aC * aC || 1;
+      T.x += ex * aT / den; T.y += ey * aT / den;
+      C.x += ex * aC / den; C.y += ey * aC / den;
+    }
+
+    function simulate(dt) {
+      const g = GRAVITY * dt * dt;
+      for (let i = 1; i < P.length; i++) {
+        const p = P[i];
+        const vx = (p.x - p.px) * DAMP, vy = (p.y - p.py) * DAMP;
+        p.px = p.x; p.py = p.y;
+        p.x += vx; p.y += vy + g;
+      }
+      for (let k = 0; k < ITER; k++) {
+        P[0].x = anchorX; P[0].y = ANCHOR_Y;
+        for (let i = 0; i < SEG; i++) link(P[i], P[i + 1], SEG_LEN);
+        link(P[SEG], P[SEG + 1], CARD_D);
+        if (dragging) applyDrag();
+      }
+    }
+
+    function render() {
+      const T = P[SEG], C = P[SEG + 1];
+      const a = Math.atan2(-(C.x - T.x), C.y - T.y);          // card angle (free, can go upside down)
+      badge.style.transform =
+        `translate(${T.x}px,${T.y}px) rotate(${a}rad) translate(${-HALF_W}px,${-CLIP_Y}px)`;
+
+      // strap: two strands, offset sideways, converging at the clip
+      const pathFor = (sign) => {
+        const pts = [];
+        for (let i = 0; i <= SEG; i++) {
+          const p0 = P[Math.max(i - 1, 0)], p1 = P[Math.min(i + 1, SEG)];
+          let tx = p1.x - p0.x, ty = p1.y - p0.y;
+          const l = Math.hypot(tx, ty) || 1;
+          const nx = -ty / l, ny = tx / l;
+          const off = sign * SPLIT * (1 - i / SEG);
+          pts.push([P[i].x + nx * off, P[i].y + ny * off]);
+        }
+        let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+        for (let i = 1; i < SEG; i++) {
+          const mx = (pts[i][0] + pts[i + 1][0]) / 2, my = (pts[i][1] + pts[i + 1][1]) / 2;
+          d += ` Q${pts[i][0].toFixed(1)} ${pts[i][1].toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+        }
+        return d + ` L${pts[SEG][0].toFixed(1)} ${pts[SEG][1].toFixed(1)}`;
+      };
+      const dA = pathFor(-1), dB = pathFor(1);
+      ropeA.setAttribute("d", dA); stitchA.setAttribute("d", dA);
+      ropeB.setAttribute("d", dB); stitchB.setAttribute("d", dB);
+    }
+
+    function toHero(e) {
+      const r = hero.getBoundingClientRect();
+      pointer.x = e.clientX - r.left;
+      pointer.y = e.clientY - r.top;
+    }
+
+    scene.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      e.preventDefault();
+      toHero(e);
+      const T = P[SEG], C = P[SEG + 1];
+      let ux = C.x - T.x, uy = C.y - T.y;
+      const d = Math.hypot(ux, uy) || 1;
+      ux /= d; uy /= d;
+      const rx = pointer.x - T.x, ry = pointer.y - T.y;
+      grab.lam = (rx * ux + ry * uy) / d;                    // where along the card you grabbed it
+      grab.lat = rx * -uy + ry * ux;                         // and how far off its centre line
+      dragging = true;
+      startX = e.clientX;
+      movedTotal = 0;
+      document.body.classList.add("dragging");
+    });
+
+    window.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      toHero(e);
+      movedTotal = Math.max(movedTotal, Math.abs(e.clientX - startX));
+    });
+
+    function endDrag(e) {
+      if (!dragging) return;
+      dragging = false;
+      document.body.classList.remove("dragging");
+    }
+
+    window.addEventListener("pointerup", endDrag);
+    window.addEventListener("pointercancel", endDrag);
+    scene.addEventListener("dragstart", (e) => e.preventDefault());
+
+    window.addEventListener("resize", initRope);
+
+    initRope();
+    let acc = 0, lastT = performance.now();
+    function frame(now) {
+      acc += Math.min((now - lastT) / 1000, 0.05);
+      lastT = now;
+      let n = 0;
+      while (acc >= STEP && n < 8) { simulate(STEP); acc -= STEP; n++; }
+      render();
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    /* =====================================================
+       WORK: the case rows are built from this list. Edit the text, and
+       add  img: "images/your-screenshot.png"  to show a real screenshot
+       instead of the placeholder phones.
+       ===================================================== */
+    const PROJECTS = [
+      { title: "Cino Wallet",   desc: "A short line about the problem you solved and what you designed.",
+        img: "images/cino.png",
+        tags: ["Mobile App", "Web3"], kind: "phones",     g: "linear-gradient(160deg,#4d8dff,#1f5fe0)", a: "#2f6cf0" },
+      { title: "BaseConnect",   desc: "A short line about the users, the constraints and the result.",
+        img: "images/BaseConnect.png",
+        tags: ["Web App", "Dashboard"], kind: "browser",     g: "linear-gradient(160deg,#d8ff5a,#9be02a)", a: "#1b1b1b", dark: true },
+      { title: "AttendeeHRM", desc: "A short line about the system, the flows and what changed.",
+        img: "images/AttendeeHRM.png",
+        tags: ["Website Design", " Saas"], kind: "browser",       g: "linear-gradient(160deg,#ffb36b,#ff7a45)", a: "#ff7a45" },
+      { title: "Defi Foundry",  desc: "A live site you designed and built in code, in a sentence.",
+        img: "images/Defi Doundry.png",
+        tags: ["Website Design", "Web3"], kind: "phones",  g: "linear-gradient(160deg,#b9a2ff,#7a5cf0)", a: "#7a5cf0" }
+    ];
+
+    (function buildCases() {
+      const host = document.getElementById("cases");
+      const phone = (cls) => `<div class="phone ${cls}"><b></b><i></i><i></i><i></i><i></i></div>`;
+      const browser = `<div class="browser"><div class="bar"><span></span><span></span><span></span></div>
+        <div class="pg"><b></b><i></i><i></i><div class="blocks"><u></u><u></u><u></u></div></div></div>`;
+      host.innerHTML = PROJECTS.map((p, i) => {
+        const media = p.img
+          ? `<img src="${p.img}" alt="${p.title}" />`
+          : p.kind === "browser" ? browser
+          : `<div class="phones">${phone("")}${phone("main")}${phone("")}</div>`;
+        const dark = p.dark ? "--ph:#161616;--bar:rgba(255,255,255,0.14);" : "";
+        return `
+        <article class="case reveal" style="transition-delay:${(i % 2) * 120}ms">
+          <div class="shot" style="--g:${p.g};--a:${p.a};${dark}">
+            ${media}
+            <span class="go" aria-hidden="true">↗</span>
+          </div>
+          <div class="case-meta">
+            <h3>${p.title}</h3>
+            <ul class="tags">${p.tags.map(t => `<li>${t.trim()}</li>`).join("")}</ul>
+          </div>
+          <p class="case-desc">${p.desc}</p>
+          <a class="case-link" href="#" aria-label="View ${p.title} case study"></a>
+        </article>`;
+      }).join("");
+    })();
+
+
+    /* =====================================================
+       EXPERIENCE: edit this list. Use  logo: "images/logo.png"  for a real logo.
+       ===================================================== */
+    const EXPERIENCE = [
+      { name: "BaseConnect",   role: " Lead Product Designer",      years: "Dec 2025 — Jan 2026", c: "#141414" },
+      { name: "Cino",   role: " Mobile App Designer",      years: "Nov 2025 — Apr 2026",    c: "#f5c518", f: "#141414" },
+      { name: "StudyHub", role: "Product Designer", years: "May 2026 — July 2025",    c: "#ee6c4d" },
+      { name: "AttendeeHRM",  role: "Product Designer",       years: "Sept 2025 — Oct 2025",    c: "#4b3fd1" },
+      { name: "Defi Foundry",  role: "UI/UX Designer",    years: "Aug 2025 - Sept 2025",           c: "#2f5d50" },
+      { name: "Afrimobile Technologies",   role: "UI Designer",           years: "Mar 2025 — May 2025",    c: "#0f7b4a" }
+    ];
+
+    (function buildExperience() {
+      document.getElementById("xpList").innerHTML = EXPERIENCE.map((x, i) => `
+        <div class="xp-row reveal" style="transition-delay:${i * 70}ms">
+          <span class="xp-co">
+            <span class="xp-logo" style="--c:${x.c};--f:${x.f || "#fff"}">${x.logo ? `<img src="${x.logo}" alt="" />` : x.name[0]}</span>
+            <span class="xp-name">${x.name}</span>
+          </span>
+          <span class="xp-role">${x.role}</span>
+          <span class="xp-yrs">${x.years}</span>
+        </div>`).join("");
+    })();
+
+    /* =====================================================
+       TESTIMONIALS: edit this list with REAL words from real people.
+       (The text below is only a placeholder.)
+       ===================================================== */
+    const TESTIMONIALS = [
+      { q: "Samuel brought our vision to life. The result was clean, modern, and impressive. Highly recommended!", name: "Client Name",  role: "Role, Company", bg: "#f4efe2" },
+      { q: "Great attention to detail and a solid understanding of user experience. Loved working with him!",            name: "Client Name",  role: "Role, Company", bg: "#d8ff5a" },
+      { q: "Our website looks more professional and engaging. Couldn't be happier with the results.",              name: "Teammate Name", role: "Role, Company", bg: "#cdbdff" },
+      { q: "He understood exactly what we needed and turned our ideas into a beautiful product.",                     name: "Client Name",  role: "Role, Company", bg: "#ffb36b" },
+      { q: "Samuel made the entire design process smooth and delivered beyond expectations.",                        name: "Teammate Name", role: "Role, Company", bg: "#ffffff" },
+      { q: "Creative, responsive, and professional. Samuel really understands good design.",               name: "Client Name",  role: "Role, Company", bg: "#a9cbff" }
+    ];
+
+    (function notesBoard() {
+      const board = document.getElementById("board");
+      board.insertAdjacentHTML("beforeend", TESTIMONIALS.map(t => `
+        <figure class="note" style="--bg:${t.bg}">
+          <q>${t.q}</q>
+          <figcaption class="who2"><span><b>${t.name}</b><small>${t.role}</small></span></figcaption>
+        </figure>`).join(""));
+
+      const els = [...board.querySelectorAll(".note")];
+      const desktop = () => window.matchMedia("(min-width: 901px)").matches;
+      // where each note lands when scattered: fraction of free space + tilt
+      const SCATTER = [
+        { fx: 0.02, fy: 0.04, r: -5 }, { fx: 0.43, fy: 0.00, r: 3 },  { fx: 0.85, fy: 0.07, r: -3 },
+        { fx: 0.13, fy: 0.56, r: 4 },  { fx: 0.52, fy: 0.50, r: -4 }, { fx: 0.95, fy: 0.55, r: 5 }
+      ];
+      const st = els.map(() => ({ x: 0, y: 0, r: 0, base: 0, vx: 0, vy: 0 }));
+      let W = 0, H = 0, cw = 0, ch = 0, tidy = false, z = 10, dragging = -1, moving = false, shown = false;
+
+      function measure() {
+        W = board.clientWidth; H = board.clientHeight;
+        cw = els[0].offsetWidth; ch = Math.max(...els.map(e => e.offsetHeight));
+      }
+
+      function targets() {
+        if (!tidy) return SCATTER.map(s => ({ x: s.fx * (W - cw), y: s.fy * (H - ch), r: s.r }));
+        const cols = 3, gap = 24, rows = Math.ceil(els.length / cols);
+        const x0 = (W - (cols * cw + (cols - 1) * gap)) / 2, y0 = (H - (rows * ch + (rows - 1) * gap)) / 2;
+        return els.map((_, i) => ({ x: x0 + (i % cols) * (cw + gap), y: y0 + Math.floor(i / cols) * (ch + gap), r: 0 }));
+      }
+
+      function paint(i) {
+        els[i].style.transform = desktop() ? `translate(${st[i].x.toFixed(1)}px,${st[i].y.toFixed(1)}px) rotate(${st[i].r.toFixed(2)}deg)` : "";
+      }
+
+      function goTo(list, staggered) {
+        list.forEach((t, i) => {
+          Object.assign(st[i], { x: t.x, y: t.y, r: t.r, base: t.r, vx: 0, vy: 0 });
+          els[i].style.transitionDelay = staggered ? i * 90 + "ms" : "0ms";
+          els[i].classList.add("settle");
+          paint(i);
+        });
+        clearTimeout(goTo.t);
+        goTo.t = setTimeout(() => els.forEach(e => { e.classList.remove("settle"); e.style.transitionDelay = ""; }), 1500);
+      }
+
+      let last = performance.now();
+      function loop(now) {
+        const dt = Math.min((now - last) / 16.67, 3); last = now;
+        let any = false;
+        els.forEach((_, i) => {
+          if (i === dragging || els[i].classList.contains("settle")) return;
+          const s = st[i];
+          if (Math.abs(s.vx) > 0.05 || Math.abs(s.vy) > 0.05 || Math.abs(s.r - s.base) > 0.05) {
+            s.x += s.vx * dt; s.y += s.vy * dt;
+            const f = Math.pow(0.94, dt); s.vx *= f; s.vy *= f;
+            if (s.x < -24) { s.x = -24; s.vx *= -0.5; } if (s.x > W - cw + 24) { s.x = W - cw + 24; s.vx *= -0.5; }
+            if (s.y < -16) { s.y = -16; s.vy *= -0.5; } if (s.y > H - ch + 16) { s.y = H - ch + 16; s.vy *= -0.5; }
+            s.r += (s.base - s.r) * 0.08 * dt;
+            paint(i); any = true;
+          }
+        });
+        if (any || dragging >= 0) requestAnimationFrame(loop); else moving = false;
+      }
+      const kick = () => { if (!moving) { moving = true; last = performance.now(); requestAnimationFrame(loop); } };
+
+      els.forEach((el, i) => {
+        let sx, sy, ox, oy, lx, ly, lt;
+        el.addEventListener("pointerdown", (e) => {
+          if (!desktop()) return;
+          e.preventDefault();
+          el.setPointerCapture(e.pointerId);
+          el.classList.remove("settle"); el.classList.add("grab");
+          el.style.zIndex = ++z; el.style.transitionDelay = "0ms";
+          dragging = i; sx = lx = e.clientX; sy = ly = e.clientY; ox = st[i].x; oy = st[i].y; lt = performance.now();
+          st[i].vx = st[i].vy = 0; kick();
+        });
+        el.addEventListener("pointermove", (e) => {
+          if (dragging !== i) return;
+          const now = performance.now(), d = Math.max(now - lt, 1);
+          st[i].vx = st[i].vx * 0.5 + ((e.clientX - lx) / d * 16.67) * 0.5;
+          st[i].vy = st[i].vy * 0.5 + ((e.clientY - ly) / d * 16.67) * 0.5;
+          lx = e.clientX; ly = e.clientY; lt = now;
+          st[i].x = ox + e.clientX - sx; st[i].y = oy + e.clientY - sy;
+          st[i].r = st[i].base + Math.max(-14, Math.min(14, st[i].vx * 1.4));   // leans into the throw
+          paint(i);
+        });
+        const up = () => { if (dragging !== i) return; el.classList.remove("grab"); dragging = -1; kick(); };
+        el.addEventListener("pointerup", up);
+        el.addEventListener("pointercancel", up);
+      });
+
+      document.getElementById("tidyBtn").addEventListener("click", (e) => {
+        tidy = !tidy;
+        e.currentTarget.textContent = tidy ? "Scatter" : "Tidy up";
+        measure(); goTo(targets(), false);
+      });
+
+      window.addEventListener("resize", () => { measure(); if (shown) goTo(targets(), false); });
+
+      // deal the notes onto the board when it scrolls into view
+      measure();
+      els.forEach((el) => { el.style.transform = desktop() ? `translate(${(W - cw) / 2}px,${(H - ch) / 2}px) scale(0.85)` : ""; });
+      new IntersectionObserver((entries, io) => {
+        if (!entries[0].isIntersecting) return;
+        io.disconnect(); shown = true; measure();
+        els.forEach(el => el.classList.add("in"));
+        goTo(targets(), true);
+      }, { threshold: 0.2 }).observe(board);
+    })();
+
+    /* hamburger menu (mobile) */
+    (function mobileMenu() {
+      const burger = document.getElementById("burger"), menu = document.getElementById("menu");
+      const set = (open) => {
+        burger.classList.toggle("open", open);
+        menu.classList.toggle("open", open);
+        burger.setAttribute("aria-expanded", open);
+        burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      };
+      burger.addEventListener("click", () => set(!menu.classList.contains("open")));
+      menu.querySelectorAll("a").forEach(a => a.addEventListener("click", () => set(false)));
+      window.addEventListener("resize", () => { if (window.innerWidth > 760) set(false); });
+    })();
+
+    /* copy email button (reads the address from the Email me link) */
+    (function copyEmail() {
+      const btn = document.getElementById("copyEmail");
+      const email = document.getElementById("emailLink").getAttribute("href").replace("mailto:", "");
+      btn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(email);
+        } catch (err) {
+          const t = document.createElement("textarea");
+          t.value = email; t.style.position = "fixed"; t.style.opacity = "0";
+          document.body.appendChild(t); t.select();
+          try { document.execCommand("copy"); } catch (e) {}
+          t.remove();
+        }
+        btn.classList.add("done");
+        clearTimeout(copyEmail.t);
+        copyEmail.t = setTimeout(() => btn.classList.remove("done"), 1800);
+      });
+    })();
+
+    (function scrollFx() {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+      }, { threshold: 0.12 });
+      document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+    })();
+  </script>
+</body>
+</html>
