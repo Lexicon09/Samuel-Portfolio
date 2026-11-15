@@ -1367,16 +1367,17 @@
        ===================================================== */
     const PROJECTS = [
       { title: "Cino Wallet",   desc: "A short line about the problem you solved and what you designed.",
-        img: "images/cino.png",
+        img: "Images/Cino.png",
+        link: "case-cino.html",
         tags: ["Mobile App", "Web3"], kind: "phones",     g: "linear-gradient(160deg,#4d8dff,#1f5fe0)", a: "#2f6cf0" },
       { title: "BaseConnect",   desc: "A short line about the users, the constraints and the result.",
-        img: "images/BaseConnect.png",
+        img: "Images/BaseConnect.png",
         tags: ["Web App", "Dashboard"], kind: "browser",     g: "linear-gradient(160deg,#d8ff5a,#9be02a)", a: "#1b1b1b", dark: true },
       { title: "AttendeeHRM", desc: "A short line about the system, the flows and what changed.",
-        img: "images/AttendeeHRM.png",
+        img: "Images/AttendeeHRM.png",
         tags: ["Website Design", " Saas"], kind: "browser",       g: "linear-gradient(160deg,#ffb36b,#ff7a45)", a: "#ff7a45" },
       { title: "Defi Foundry",  desc: "A live site you designed and built in code, in a sentence.",
-        img: "images/Defi Doundry.png",
+        img: "Images/Defi Doundry.png",
         tags: ["Website Design", "Web3"], kind: "phones",  g: "linear-gradient(160deg,#b9a2ff,#7a5cf0)", a: "#7a5cf0" }
     ];
 
@@ -1387,7 +1388,7 @@
         <div class="pg"><b></b><i></i><i></i><div class="blocks"><u></u><u></u><u></u></div></div></div>`;
       host.innerHTML = PROJECTS.map((p, i) => {
         const media = p.img
-          ? `<img src="${p.img}" alt="${p.title}" />`
+          ? `<img src="${encodeURI(p.img)}" alt="${p.title}" />`
           : p.kind === "browser" ? browser
           : `<div class="phones">${phone("")}${phone("main")}${phone("")}</div>`;
         const dark = p.dark ? "--ph:#161616;--bar:rgba(255,255,255,0.14);" : "";
@@ -1402,7 +1403,7 @@
             <ul class="tags">${p.tags.map(t => `<li>${t.trim()}</li>`).join("")}</ul>
           </div>
           <p class="case-desc">${p.desc}</p>
-          <a class="case-link" href="#" aria-label="View ${p.title} case study"></a>
+          <a class="case-link" href="${p.link || '#'}" aria-label="View ${p.title} case study"></a>
         </article>`;
       }).join("");
     })();
