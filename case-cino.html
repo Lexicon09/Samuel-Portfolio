@@ -28,29 +28,6 @@
     html { scroll-behavior: smooth; }
     html, body { background: var(--page); color: var(--ink); font-family: var(--body); -webkit-font-smoothing: antialiased; }
 
-    /* ---------- top bar ---------- */
-    .topbar {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
-      height: 66px; padding: 0 7.8vw;
-      display: flex; align-items: center; justify-content: space-between;
-      background: rgba(255,255,255,0.92); backdrop-filter: blur(10px);
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.3s;
-    }
-    .topbar.scrolled { border-color: var(--line); }
-
-    .logo { font-family: "Mrs Saint Delafield", cursive; font-size: 40px; line-height: 1; color: var(--ink); text-decoration: none; }
-    .logo i { font-style: normal; color: var(--accent); }
-
-    .back {
-      display: inline-flex; align-items: center; gap: 8px;
-      height: 36px; padding: 0 16px; border-radius: 999px;
-      border: 1px solid var(--line); background: #fff;
-      color: var(--ink); text-decoration: none; font-size: 14px; font-weight: 500;
-      transition: background 0.2s, color 0.2s;
-    }
-    .back:hover { background: var(--ink); color: #fff; }
-
     /* ---------- image placeholders ----------
        To use a real image: replace the whole <div class="ph">…</div> with
        <img src="images/cino/your-file.png" alt="describe it" />  */
@@ -79,7 +56,7 @@
 
     /* ---------- hero ---------- */
     .hero {
-      padding: 130px 7.8vw 0;
+      padding: 64px 7.8vw 0;
       max-width: calc(1240px + 15.6vw);
       margin: 0 auto;
     }
@@ -254,9 +231,9 @@
     @media (max-width: 960px) {
       .layout { grid-template-columns: 1fr; gap: 0; padding-top: 0; }
 
-      /* side menu becomes a sticky scrolling strip under the top bar */
+      /* side menu becomes a sticky scrolling strip */
       .toc {
-        position: sticky; top: 66px; z-index: 40;
+        position: sticky; top: 0; z-index: 40;
         margin: 0 -7.8vw 40px; padding: 10px 7.8vw;
         background: rgba(255,255,255,0.95); backdrop-filter: blur(10px);
         border-bottom: 1px solid var(--line);
@@ -269,12 +246,11 @@
       .toc a::before { display: none; }
       .toc a.on { background: var(--ink); color: #fff; }
 
-      section.part { scroll-margin-top: 140px; padding-bottom: 80px; }
+      section.part { scroll-margin-top: 80px; padding-bottom: 80px; }
     }
 
     @media (max-width: 760px) {
-      .topbar { padding: 0 5vw; }
-      .hero { padding: 100px 5vw 0; }
+      .hero { padding: 48px 5vw 0; }
       .layout { padding-left: 5vw; padding-right: 5vw; }
       .toc { margin-left: -5vw; margin-right: -5vw; padding-left: 5vw; padding-right: 5vw; }
       .facts { grid-template-columns: 1fr 1fr; }
@@ -292,11 +268,6 @@
   </style>
 </head>
 <body>
-
-  <header class="topbar" id="topbar">
-    <a class="logo" href="index.html" aria-label="Samuel, home">Samuel<i>.</i></a>
-    <a class="back" href="index.html#projects"><span aria-hidden="true">←</span> All work</a>
-  </header>
 
   <!-- ================= HERO ================= -->
   <div class="hero">
@@ -534,10 +505,6 @@
   </aside>
 
   <script>
-    /* top bar gets a line once you scroll */
-    const topbar = document.getElementById("topbar");
-    addEventListener("scroll", () => topbar.classList.toggle("scrolled", scrollY > 8), { passive: true });
-
     /* side menu: highlight the section being read */
     (function spy() {
       const links = [...document.querySelectorAll("#toc a")];

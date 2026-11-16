@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/images/:match*", "destination": "/Images/:match*" },
+    { "source": "/casino", "destination": "/case-cino.html" },
+    { "source": "/casino.html", "destination": "/case-cino.html" }
+  ]
+}
